@@ -1,13 +1,6 @@
 "use client";
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
-
-export type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl?: string;
-  quantity: number;
-};
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from "react";
+import { CartItem } from "../types";
 
 type CartState = {
   items: CartItem[];
@@ -49,6 +42,26 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+
+  useEffect(() => {
+    const stored = localStorage.getItem("cart");
+    if (stored) {
+      try {
+        const items = JSON.parse(stored);
+        if (Array.isArray(items)) {
+          dispatch({ type: "CLEAR_CART" });
+          items.forEach((item: CartItem) => {
+            dispatch({ type: "ADD_ITEM", item });
+          });
+        }
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(state.items));
+  }, [state.items]);
+
   return <CartContext.Provider value={{ state, dispatch }}>{children}</CartContext.Provider>;
 }
 

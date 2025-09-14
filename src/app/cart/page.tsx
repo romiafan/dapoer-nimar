@@ -1,9 +1,6 @@
 "use client";
 import { useCart } from "../../context/CartContext";
-
-function formatRupiah(amount: number) {
-  return "Rp" + amount.toLocaleString("id-ID");
-}
+import { formatRupiah } from "../../lib/indonesian-utils";
 
 export default function CartPage() {
   const { state, dispatch } = useCart();

@@ -4,16 +4,16 @@ import { useCart } from "../../../context/CartContext";
 import { useParams } from "next/navigation";
 import { db } from "../../../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
-
-function formatRupiah(amount: number) {
-  return "Rp" + amount.toLocaleString("id-ID");
-}
+import { formatRupiah } from "../../../lib/indonesian-utils";
+import { Product } from "../../../types";
 
 export default function ProductDetailPage() {
+  const { dispatch } = useCart(); // Always call hooks at the top
   const { id } = useParams();
-  const [product, setProduct] = useState<any | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -21,12 +21,16 @@ export default function ProductDetailPage() {
         const docRef = doc(db, "products", id as string);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data() });
+          setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
         } else {
           setError("Product not found");
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
       } finally {
         setLoading(false);
       }
@@ -38,10 +42,9 @@ export default function ProductDetailPage() {
   if (error) return <div>Error: {error}</div>;
   if (!product) return null;
 
-  const { dispatch } = useCart();
-  const [added, setAdded] = useState(false);
-
   function handleAddToCart() {
+    if (!product) return;
+    
     dispatch({
       type: "ADD_ITEM",
       item: {
@@ -58,6 +61,12 @@ export default function ProductDetailPage() {
 
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-8">
+      <button
+        onClick={() => window.history.back()}
+        className="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+      >
+        ← Back to Products
+      </button>
       {product.imageUrl && (
         <img src={product.imageUrl} alt={product.name} className="w-full h-64 object-cover mb-4 rounded" />
       )}
@@ -68,7 +77,7 @@ export default function ProductDetailPage() {
       <p className="text-gray-700 mb-4">{product.description}</p>
       <button
         onClick={handleAddToCart}
-        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors w-full"
         disabled={added}
       >
         {added ? "Added!" : "Add to Cart"}
