@@ -124,6 +124,7 @@ node scripts/seed-products.js
 ## � Changelog
 
 ### Version 0.2.0 (September 15, 2025) - Major Feature Release
+
 - ✅ **Complete E-commerce Implementation**: Full shopping cart system with product management
 - ✅ **Firebase Integration**: Real-time database with Firestore, environment variable optimization
 - ✅ **Enhanced Product Experience**: Bulk quantity selection, add to cart, product detail pages
@@ -133,6 +134,7 @@ node scripts/seed-products.js
 - ✅ **Development Tools**: Seed scripts, cleanup utilities, enhanced build configuration
 
 ### Version 0.1.0 (Initial Release)
+
 - 🎯 **Project Setup**: Next.js 15 with App Router and Turbopack
 - 🎯 **Basic Structure**: Initial project scaffolding and configuration
 

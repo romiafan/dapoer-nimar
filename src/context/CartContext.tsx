@@ -9,6 +9,7 @@ type CartState = {
 type CartAction =
   | { type: "ADD_ITEM"; item: CartItem }
   | { type: "REMOVE_ITEM"; id: string }
+  | { type: "UPDATE_QUANTITY"; id: string; quantity: number }
   | { type: "CLEAR_CART" };
 
 const CartContext = createContext<{
@@ -31,6 +32,17 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
     case "REMOVE_ITEM": {
       return { items: state.items.filter(i => i.id !== action.id) };
+    }
+    case "UPDATE_QUANTITY": {
+      if (action.quantity <= 0) {
+        // If quantity is 0 or less, remove the item
+        return { items: state.items.filter(i => i.id !== action.id) };
+      }
+      return {
+        items: state.items.map(i =>
+          i.id === action.id ? { ...i, quantity: action.quantity } : i
+        ),
+      };
     }
     case "CLEAR_CART": {
       return { items: [] };

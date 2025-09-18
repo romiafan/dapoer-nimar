@@ -43,33 +43,162 @@ export interface PaymentVerificationResponse {
   amount?: number;
 }
 
-// Midtrans implementation (placeholder)
+// Midtrans implementation
 class MidtransProvider implements PaymentProvider {
   name = 'Midtrans';
+  private serverKey: string;
+  private clientKey: string;
+  private isProduction: boolean;
+  private baseUrl: string;
+  
+  constructor() {
+    this.serverKey = process.env.MIDTRANS_SERVER_KEY || '';
+    this.clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '';
+    this.isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
+    this.baseUrl = this.isProduction 
+      ? 'https://api.midtrans.com/v2' 
+      : 'https://api.sandbox.midtrans.com/v2';
+      
+    if (!this.serverKey || !this.clientKey) {
+      console.warn('Midtrans credentials not configured. Please check your environment variables.');
+    }
+  }
   
   async createTransaction(data: PaymentTransactionData): Promise<PaymentResponse> {
-    // TODO: Implement Midtrans Snap API integration
-    // https://docs.midtrans.com/en/snap/overview
-    
-    console.log('Creating Midtrans transaction for order:', data.orderId);
-    
-    // Placeholder response
-    return {
-      success: false,
-      transactionId: data.orderId,
-      message: 'Midtrans integration not yet implemented'
-    };
+    try {
+      if (!this.serverKey) {
+        return {
+          success: false,
+          transactionId: data.orderId,
+          message: 'Midtrans server key not configured'
+        };
+      }
+
+      // Prepare Midtrans Snap API payload
+      const snapPayload = {
+        transaction_details: {
+          order_id: data.orderId,
+          gross_amount: data.amount
+        },
+        customer_details: {
+          first_name: data.customerDetails.firstName,
+          last_name: data.customerDetails.lastName || '',
+          email: data.customerDetails.email || '',
+          phone: data.customerDetails.phone,
+          shipping_address: {
+            address: data.shippingAddress.address,
+            city: data.shippingAddress.city || '',
+            postal_code: data.shippingAddress.postalCode || ''
+          }
+        },
+        item_details: data.items.map(item => ({
+          id: item.id,
+          price: item.price,
+          quantity: item.quantity,
+          name: item.name
+        })),
+        callbacks: {
+          finish: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment/success`
+        }
+      };
+
+      // Call Midtrans Snap API
+      const response = await fetch(`${this.baseUrl}/charge`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${Buffer.from(this.serverKey + ':').toString('base64')}`
+        },
+        body: JSON.stringify(snapPayload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.redirect_url) {
+        return {
+          success: true,
+          paymentUrl: result.redirect_url,
+          transactionId: data.orderId,
+          message: 'Payment URL created successfully'
+        };
+      } else {
+        return {
+          success: false,
+          transactionId: data.orderId,
+          message: result.status_message || 'Failed to create payment'
+        };
+      }
+    } catch (error) {
+      console.error('Midtrans payment creation error:', error);
+      return {
+        success: false,
+        transactionId: data.orderId,
+        message: 'Payment service temporarily unavailable'
+      };
+    }
   }
   
   async verifyTransaction(transactionId: string): Promise<PaymentVerificationResponse> {
-    // TODO: Implement Midtrans transaction status check
-    console.log('Verifying Midtrans transaction:', transactionId);
-    
-    return {
-      success: false,
-      status: 'pending',
-      transactionId
-    };
+    try {
+      if (!this.serverKey) {
+        return {
+          success: false,
+          status: 'pending',
+          transactionId
+        };
+      }
+
+      const response = await fetch(`${this.baseUrl}/${transactionId}/status`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(this.serverKey + ':').toString('base64')}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        let status: 'pending' | 'paid' | 'failed' | 'cancelled' = 'pending';
+        
+        switch (result.transaction_status) {
+          case 'capture':
+          case 'settlement':
+            status = 'paid';
+            break;
+          case 'pending':
+            status = 'pending';
+            break;
+          case 'deny':
+          case 'cancel':
+          case 'expire':
+            status = 'cancelled';
+            break;
+          case 'failure':
+            status = 'failed';
+            break;
+        }
+
+        return {
+          success: true,
+          status,
+          transactionId,
+          amount: result.gross_amount ? parseInt(result.gross_amount) : undefined
+        };
+      } else {
+        return {
+          success: false,
+          status: 'pending',
+          transactionId
+        };
+      }
+    } catch (error) {
+      console.error('Midtrans verification error:', error);
+      return {
+        success: false,
+        status: 'pending',
+        transactionId
+      };
+    }
   }
 }
 
