@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dapoer Nimar - Toko Donat Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <i class="fas fa-cookie-bite"></i>
+                    <span>Dapoer Nimar</span>
+                </div>
+                <div class="nav-menu">
+                    <a href="#home" class="nav-link">Beranda</a>
+                    <a href="#products" class="nav-link">Produk</a>
+                    <a href="#about" class="nav-link">Tentang</a>
+                    <a href="#contact" class="nav-link">Kontak</a>
+                </div>
+                <div class="nav-cart">
+                    <button id="cart-btn" class="cart-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count" class="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>Selamat Datang di Dapoer Nimar</h1>
+                <p>Donat segar dan lezat, dibuat dengan cinta untuk keluarga Indonesia</p>
+                <button class="cta-button" onclick="scrollToProducts()">Lihat Produk</button>
+            </div>
+        </section>
+
+        <section id="products" class="products-section">
+            <div class="container">
+                <h2 class="section-title">Produk Kami</h2>
+                <div class="product-filters">
+                    <button class="filter-btn active" data-category="all">Semua</button>
+                    <button class="filter-btn" data-category="klasik">Klasik</button>
+                    <button class="filter-btn" data-category="premium">Premium</button>
+                    <button class="filter-btn" data-category="special">Spesial</button>
+                </div>
+                <div id="products-grid" class="products-grid">
+                    <!-- Products will be loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="container">
+                <h2 class="section-title">Tentang Dapoer Nimar</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>Dapoer Nimar adalah UMKM yang didedikasikan untuk menghadirkan donat berkualitas tinggi dengan cita rasa yang autentik. Kami menggunakan bahan-bahan pilihan dan resep tradisional yang telah diwariskan turun-temurun.</p>
+                        <p>Setiap donat dibuat dengan penuh perhatian dan cinta, memastikan kelezatan dan kualitas yang konsisten untuk setiap pelanggan.</p>
+                    </div>
+                    <div class="about-features">
+                        <div class="feature">
+                            <i class="fas fa-heart"></i>
+                            <h3>Dibuat dengan Cinta</h3>
+                            <p>Setiap produk dibuat dengan penuh perhatian dan dedikasi</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-leaf"></i>
+                            <h3>Bahan Segar</h3>
+                            <p>Menggunakan bahan-bahan segar dan berkualitas tinggi</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-truck"></i>
+                            <h3>Pengiriman Cepat</h3>
+                            <p>Donat segar langsung diantar ke rumah Anda</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <h2 class="section-title">Hubungi Kami</h2>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+62 812-3456-7890</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>info@dapoernimar.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Jl. Donat Manis No. 123, Jakarta</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Keranjang Belanja</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="cart-items" class="cart-items">
+                    <!-- Cart items will be loaded here -->
+                </div>
+                <div class="cart-summary">
+                    <div class="cart-total">
+                        <strong>Total: Rp <span id="cart-total">0</span></strong>
+                    </div>
+                    <button id="checkout-btn" class="checkout-button">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Checkout</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="checkout-form" class="checkout-form">
+                    <div class="form-group">
+                        <label for="customer-name">Nama Lengkap:</label>
+                        <input type="text" id="customer-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-phone">Nomor Telepon:</label>
+                        <input type="tel" id="customer-phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-address">Alamat Lengkap:</label>
+                        <textarea id="customer-address" name="address" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery-time">Waktu Pengiriman:</label>
+                        <select id="delivery-time" name="deliveryTime" required>
+                            <option value="">Pilih waktu pengiriman</option>
+                            <option value="09:00-12:00">09:00 - 12:00</option>
+                            <option value="12:00-15:00">12:00 - 15:00</option>
+                            <option value="15:00-18:00">15:00 - 18:00</option>
+                            <option value="18:00-21:00">18:00 - 21:00</option>
+                        </select>
+                    </div>
+                    <div class="order-summary">
+                        <h3>Ringkasan Pesanan</h3>
+                        <div id="checkout-items"></div>
+                        <div class="checkout-total">
+                            <strong>Total: Rp <span id="checkout-total">0</span></strong>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-order-btn">Pesan Sekarang</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Dapoer Nimar. Semua hak dilindungi.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
